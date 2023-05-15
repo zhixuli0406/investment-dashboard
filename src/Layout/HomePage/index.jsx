@@ -11,6 +11,7 @@ const Homepage = () => {
     const [allStockInfo, setAllStockInfo] = useState([]);
     const [selectStock, setSelectStock] = useState(null);
     const [inputValue, setInputValue] = useState("");
+    const [searchListShow, setSearchListShow] = useState(false);
     const [stockPrice, setStockPrice] = useState(null);
     const options = {
         includeScore: true,
@@ -99,19 +100,25 @@ const Homepage = () => {
                         'aria-label': 'search'
                     }}
                     value={inputValue}
-                    onChange={(event) => setInputValue(event.target.value)}
+                    onChange={(event) => {
+                        setInputValue(event.target.value);
+                        if (event.target.value.length > 0)
+                            setSearchListShow(true);
+                        else
+                            setSearchListShow(false);
+                    }}
                 />
             </Search>
             {
-                inputValue.length > 0 ?
-                    <List sx={{ border: "groove", position: 'absolute', backgroundColor: '#fff',zIndex:1000 }}>
+                searchListShow ?
+                    <List sx={{ border: "groove", position: 'absolute', backgroundColor: '#fff', zIndex: 1000 }}>
                         {
                             fuse.search(inputValue).slice(0, 10).map((Stock) => (
                                 <ListItem disablePadding>
                                     <ListItemButton
                                         onClick={() => {
                                             setSelectStock(Stock.item);
-                                            setInputValue("");
+                                            setSearchListShow(false);
                                         }}
                                     >
                                         <ListItemText primary={`${Stock.item.stock_id} - ${Stock.item.stock_name}`} />
