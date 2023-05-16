@@ -6,6 +6,7 @@ import { Search, SearchIconWrapper, StyledInputBase } from "../../Component/Sear
 import SearchIcon from '@mui/icons-material/Search';
 import Fuse from 'fuse.js'
 import TechnicalIndicatorKLineChart from "../../Component/TechnicalIndicatorKLineChart";
+import FinanceChart from "../../Component/FinanceChart";
 
 const Homepage = () => {
     const [allStockInfo, setAllStockInfo] = useState([]);
@@ -13,6 +14,7 @@ const Homepage = () => {
     const [inputValue, setInputValue] = useState("");
     const [searchListShow, setSearchListShow] = useState(false);
     const [stockPrice, setStockPrice] = useState(null);
+    const [stockFinance, setStockFinance] = useState(null);
     const options = {
         includeScore: true,
         keys: ['stock_id', 'stock_name']
@@ -24,8 +26,10 @@ const Homepage = () => {
     }, []);
 
     useEffect(() => {
-        if (selectStock)
+        if (selectStock) {
             getStockPrice()
+            getFinance()
+        }
     }, [selectStock]);
 
     const showTechnicalIndicatorKLineChart = () => {
@@ -34,6 +38,27 @@ const Homepage = () => {
                 <TechnicalIndicatorKLineChart dataset={stockPrice} seriesName={selectStock.stock_name} />
             )
         }
+    }
+
+    const showFinanceChart = () => {
+        if (stockPrice) {
+            return (
+                <FinanceChart dataset={stockFinance} seriesName={selectStock.stock_name} />
+            )
+        }
+    }
+
+    const getFinance = async () => {
+        const response = await axios.get(`https://stock-proxy-uyy2ythogq-de.a.run.app/_td-stock/api/resource/FinanceChartService.ApacLibraCharts;symbols=%5B%22${selectStock.stock_id}.TWO%22%5D;type=tick`);
+        let chart = response.data['0'].chart;
+        let data = [];
+        for (let i = 0; i < chart.timestamp.length; i++) {
+            data.push([
+                chart.timestamp[i] * 1000,
+                chart.indicators.quote['0'].close[i]
+            ])
+        }
+        setStockFinance(data)
     }
 
     const getAllStockList = async () => {
@@ -129,7 +154,7 @@ const Homepage = () => {
                     </List> : null
             }
             {
-                showTechnicalIndicatorKLineChart()
+                showFinanceChart()
             }
         </Container>
     )
