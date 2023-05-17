@@ -1,36 +1,176 @@
 import React, { useEffect, useState, useRef } from 'react'
-import { init, dispose, registerLocale } from 'klinecharts'
-import Layout from '../../Layout/ChartLayout/index'
+import Highcharts from 'highcharts/highstock'
+import HighchartsReact from 'highcharts-react-official'
+import moment from 'moment-timezone';
+require('highcharts/indicators/indicators')(Highcharts)
+require('highcharts/indicators/pivot-points')(Highcharts)
+require('highcharts/indicators/macd')(Highcharts)
+require('highcharts/modules/exporting')(Highcharts)
+require('highcharts/modules/map')(Highcharts)
 
 export default function TechnicalIndicatorKLineChart(props) {
-    const { dataset, seriesName } = props
-    const chart = useRef()
+    const { dataset, seriesName } = props;
+    const [chartConfig, setChartConfig] = useState(null);
+    const chartRef = useRef();
 
     useEffect(() => {
-        registerLocale('zh-TW', {
-            time: '時間：',
-            open: '開：',
-            high: '高：',
-            low: '低：',
-            close: '收：',
-            volume: '成交量：'
+        let ohlc = []
+        let volume = []
+        let dataLength = dataset.length
+        let groupingUnits = [[
+            'week',             // unit name
+            [1]               // allowed multiples
+        ], [
+            'month',
+            [1, 2, 3, 4, 6]
+        ]]
+        for (let i = 0; i < dataLength; i += 1) {
+            ohlc.push([
+                dataset[i][0], // the date
+                dataset[i][1], // open
+                dataset[i][2], // high
+                dataset[i][3], // low
+                dataset[i][4] // close
+            ]);
+
+            volume.push([
+                dataset[i][0], // the date
+                dataset[i][5] // the volume
+            ]);
+        }
+        Highcharts.setOptions({
+            time: {
+                /**
+                 * Use moment-timezone.js to return the timezone offset for individual
+                 * timestamps, used in the X axis labels and the tooltip header.
+                 */
+                getTimezoneOffset: function (timestamp) {
+                    var zone = 'Asia/Taipei',
+                        timezoneOffset = -moment.tz(timestamp, zone).utcOffset();
+
+                    return timezoneOffset;
+                }
+            }
+        });
+        setChartConfig({
+            rangeSelector: {
+                selected: 1
+            },
+            title: {
+                text: seriesName
+            },
+            yAxis: [{
+                labels: {
+                    align: 'right',
+                    x: -3
+                },
+                title: {
+                    text: 'OHLC'
+                },
+                height: '60%',
+                lineWidth: 2,
+                resize: {
+                    enabled: true
+                }
+            }, {
+                labels: {
+                    align: 'right',
+                    x: -3
+                },
+                title: {
+                    text: 'Volume'
+                },
+                top: '65%',
+                height: '35%',
+                offset: 0,
+                lineWidth: 2
+            }],
+            tooltip: {
+                split: true
+            },
+            series: [{
+                type: 'candlestick',
+                name: seriesName,
+                data: ohlc,
+                tooltip: {
+                    valueDecimals: 2
+                },
+                dataGrouping: {
+                    units: groupingUnits
+                }
+            }, {
+                type: 'column',
+                name: 'Volume',
+                data: volume,
+                yAxis: 1,
+                dataGrouping: {
+                    units: groupingUnits
+                }
+            }]
         })
-        chart.current = init('technical-indicator-k-line')
-        chart.current?.setLocale('zh-TW')
-        chart.current?.createIndicator('MA', false, { id: 'candle_pane' })
-        chart.current?.createIndicator('KDJ', false, { height: 80 })
-        chart.current?.applyNewData(dataset)
-        return () => { dispose('technical-indicator-k-line') }
     }, [])
 
     useEffect(() => {
-        chart.current?.applyNewData(dataset)
-    }, [dataset])
+        let ohlc = []
+        let volume = []
+        let dataLength = dataset.length
+        let groupingUnits = [[
+            'week',             // unit name
+            [1]               // allowed multiples
+        ], [
+            'month',
+            [1, 2, 3, 4, 6]
+        ]]
+        for (let i = 0; i < dataLength; i += 1) {
+            ohlc.push([
+                dataset[i][0], // the date
+                dataset[i][1], // open
+                dataset[i][2], // high
+                dataset[i][3], // low
+                dataset[i][4] // close
+            ]);
+
+            volume.push([
+                dataset[i][0], // the date
+                dataset[i][5] // the volume
+            ]);
+        }
+        let updateObject = {
+            title: {
+                text: seriesName
+            },
+            series: [{
+                type: 'candlestick',
+                name: seriesName,
+                data: ohlc,
+                tooltip: {
+                    valueDecimals: 2
+                },
+                dataGrouping: {
+                    units: groupingUnits
+                }
+            }, {
+                type: 'column',
+                name: 'Volume',
+                data: volume,
+                yAxis: 1,
+                dataGrouping: {
+                    units: groupingUnits
+                }
+            }]
+        }
+        setChartConfig(chartConfig => ({
+            ...chartConfig,
+            ...updateObject
+        }))
+    }, [dataset, seriesName])
 
     return (
-        <Layout
-            title={seriesName}>
-            <div id="technical-indicator-k-line" style={{ width: '100%', height: '600px' }} />
-        </Layout>
+        <HighchartsReact
+            highcharts={Highcharts}
+            constructorType='stockChart'
+            options={chartConfig}
+            ref={chartRef}
+        />
     )
 }

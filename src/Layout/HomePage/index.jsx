@@ -1,12 +1,40 @@
 import { useEffect, useState } from "react";
 import Select from 'react-select';
 import axios from "axios";
-import { TextField, Container, Autocomplete, Box, List, ListItem, ListItemText, ListItemButton } from '@mui/material/';
+import SwipeableViews from 'react-swipeable-views';
+import { Tab, Container, Tabs, Box, List, ListItem, ListItemText, ListItemButton } from '@mui/material/';
 import { Search, SearchIconWrapper, StyledInputBase } from "../../Component/Search";
 import SearchIcon from '@mui/icons-material/Search';
 import Fuse from 'fuse.js'
 import TechnicalIndicatorKLineChart from "../../Component/TechnicalIndicatorKLineChart";
 import FinanceChart from "../../Component/FinanceChart";
+
+function TabPanel(props) {
+    const { children, value, index, ...other } = props;
+
+    return (
+        <div
+            role="tabpanel"
+            hidden={value !== index}
+            id={`full-width-tabpanel-${index}`}
+            aria-labelledby={`full-width-tab-${index}`}
+            {...other}
+        >
+            {value === index && (
+                <Box sx={{ p: 3 }}>
+                    {children}
+                </Box>
+            )}
+        </div>
+    );
+}
+
+function a11yProps(index) {
+    return {
+      id: `full-width-tab-${index}`,
+      'aria-controls': `full-width-tabpanel-${index}`,
+    };
+  }
 
 const Homepage = () => {
     const [allStockInfo, setAllStockInfo] = useState([]);
@@ -15,6 +43,16 @@ const Homepage = () => {
     const [searchListShow, setSearchListShow] = useState(false);
     const [stockPrice, setStockPrice] = useState(null);
     const [stockFinance, setStockFinance] = useState(null);
+    const [value, setValue] =useState(0);
+
+    const handleChange = (event, newValue) => {
+        setValue(newValue);
+    };
+
+    const handleChangeIndex = (index) => {
+        setValue(index);
+    };
+
     const options = {
         includeScore: true,
         keys: ['stock_id', 'stock_name']
@@ -26,10 +64,12 @@ const Homepage = () => {
     }, []);
 
     useEffect(() => {
-        if (selectStock) {
-            getStockPrice()
+        getStockPrice()
+        getFinance()
+        const intervalId = setInterval(() => {
             getFinance()
-        }
+        }, 60000);
+        return () => clearInterval(intervalId);
     }, [selectStock]);
 
     const showTechnicalIndicatorKLineChart = () => {
@@ -55,7 +95,8 @@ const Homepage = () => {
         for (let i = 0; i < chart.timestamp.length; i++) {
             data.push([
                 chart.timestamp[i] * 1000,
-                chart.indicators.quote['0'].close[i]
+                chart.indicators.quote['0'].close[i],
+                chart.indicators.quote['0'].volume[i]
             ])
         }
         setStockFinance(data)
@@ -95,15 +136,14 @@ const Homepage = () => {
             let data = [];
             response.data.data.map((item) => {
                 data.push(
-                    {
-                        timestamp: new Date(item.date).toString(),
-                        open: item.open,
-                        close: item.close,
-                        high: item.max,
-                        low: item.min,
-                        volume: item.Trading_Volume,
-                        turnover: item.Trading_money
-                    }
+                    [
+                        new Date(item.date).getTime(),
+                        item.open,
+                        item.max,
+                        item.min,
+                        item.close,
+                        item.Trading_Volume
+                    ]
                 )
             })
             setStockPrice(data)
@@ -153,9 +193,33 @@ const Homepage = () => {
                         }
                     </List> : null
             }
-            {
-                showFinanceChart()
-            }
+            <Tabs
+                value={value}
+                onChange={handleChange}
+                indicatorColor="secondary"
+                textColor="inherit"
+                variant="fullWidth"
+                aria-label="full width tabs example"
+            >
+                <Tab label="走勢圖" {...a11yProps(0)} />
+                <Tab label="技術分析" {...a11yProps(1)} />
+            </Tabs>
+            <SwipeableViews
+                index={value}
+                onChangeIndex={handleChangeIndex}
+            >
+                <TabPanel value={value} index={0} >
+                    {
+                        showFinanceChart()
+                    }
+                </TabPanel>
+                <TabPanel value={value} index={1}>
+                    {
+                        showTechnicalIndicatorKLineChart()
+                    }
+                </TabPanel>
+            </SwipeableViews>
+
         </Container>
     )
 }

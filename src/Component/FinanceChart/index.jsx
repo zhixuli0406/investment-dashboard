@@ -14,6 +14,20 @@ export default function FinanceChart(props) {
     const chartRef = useRef();
 
     useEffect(() => {
+        let ohlc = []
+        let volume = []
+        let dataLength = dataset.length
+        for (let i = 0; i < dataLength; i += 1) {
+            ohlc.push([
+                dataset[i][0], // the date
+                dataset[i][1], // close
+            ]);
+
+            volume.push([
+                dataset[i][0], // the date
+                dataset[i][2] // the volume
+            ]);
+        }
         Highcharts.setOptions({
             time: {
                 /**
@@ -35,28 +49,91 @@ export default function FinanceChart(props) {
             title: {
                 text: seriesName
             },
+            yAxis: [{
+                labels: {
+                    align: 'right',
+                    x: -3
+                },
+                title: {
+                    text: 'OHLC'
+                },
+                height: '60%',
+                lineWidth: 2,
+                resize: {
+                    enabled: true
+                }
+            }, {
+                labels: {
+                    align: 'right',
+                    x: -3
+                },
+                title: {
+                    text: 'Volume'
+                },
+                top: '65%',
+                height: '35%',
+                offset: 0,
+                lineWidth: 2
+            }],
+            rangeSelector: {
+                buttons: [{
+                    type: 'all',
+                    text: 'All'
+                }]
+            },
+            navigator: {
+                enabled: false
+            },
             series: [{
                 name: seriesName,
-                data: dataset,
+                data: ohlc,
                 tooltip: {
                     valueDecimals: 2
                 },
                 type: 'line'
+            },{
+                type: 'column',
+                name: 'Volume',
+                data: volume,
+                yAxis: 1
             }]
         })
     }, [])
 
     useEffect(() => {
+        let ohlc = []
+        let volume = []
+        let dataLength = dataset.length
+        for (let i = 0; i < dataLength; i += 1) {
+            ohlc.push([
+                dataset[i][0], // the date
+                dataset[i][1], // close
+            ]);
+
+            volume.push([
+                dataset[i][0], // the date
+                dataset[i][2] // the volume
+            ]);
+        }
         let updateObject = {
             title: {
                 text: seriesName
             },
             series: [{
                 name: seriesName,
-                data: dataset
+                data: ohlc,
+                tooltip: {
+                    valueDecimals: 2
+                },
+                type: 'line'
+            },{
+                type: 'column',
+                name: 'Volume',
+                data: volume,
+                yAxis: 1
             }]
         }
-        setChartConfig(chartConfig=>({
+        setChartConfig(chartConfig => ({
             ...chartConfig,
             ...updateObject
         }))
