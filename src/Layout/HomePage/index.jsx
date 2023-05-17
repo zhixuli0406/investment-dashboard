@@ -136,14 +136,15 @@ const Homepage = () => {
             let data = [];
             response.data.data.map((item) => {
                 data.push(
-                    [
-                        new Date(item.date).getTime(),
-                        item.open,
-                        item.max,
-                        item.min,
-                        item.close,
-                        item.Trading_Volume
-                    ]
+                    {
+                        timestamp: new Date(item.date).toString(),
+                        open: item.open,
+                        close: item.close,
+                        high: item.max,
+                        low: item.min,
+                        volume: item.Trading_Volume,
+                        turnover: item.Trading_money
+                    }
                 )
             })
             setStockPrice(data)

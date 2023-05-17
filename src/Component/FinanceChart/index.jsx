@@ -91,7 +91,7 @@ export default function FinanceChart(props) {
                     valueDecimals: 2
                 },
                 type: 'line'
-            },{
+            }, {
                 type: 'column',
                 name: 'Volume',
                 data: volume,
@@ -126,7 +126,7 @@ export default function FinanceChart(props) {
                     valueDecimals: 2
                 },
                 type: 'line'
-            },{
+            }, {
                 type: 'column',
                 name: 'Volume',
                 data: volume,
