@@ -1,7 +1,8 @@
 import React, { useEffect, useState, useRef } from 'react'
 import Highcharts from 'highcharts/highstock'
-import HighchartsReact from 'highcharts-react-official'
-import moment from 'moment-timezone';
+import { init, dispose } from 'klinecharts'
+import Layout from '../../Layout/ChartLayout/index'
+import axios from "axios";
 require('highcharts/indicators/indicators')(Highcharts)
 require('highcharts/indicators/pivot-points')(Highcharts)
 require('highcharts/indicators/macd')(Highcharts)
@@ -9,142 +10,78 @@ require('highcharts/modules/exporting')(Highcharts)
 require('highcharts/modules/map')(Highcharts)
 
 export default function FinanceChart(props) {
-    const { dataset, seriesName } = props;
-    const [chartConfig, setChartConfig] = useState(null);
-    const chartRef = useRef();
+    const { stockID, seriesName } = props;
+    const [dataSet, setDataSet] = useState([]);
+    const [previousClose, setPreviousClose] = useState(0);
+    const chart = useRef()
 
-    useEffect(() => {
-        let ohlc = []
-        let volume = []
-        let dataLength = dataset.length
-        for (let i = 0; i < dataLength; i += 1) {
-            ohlc.push([
-                dataset[i][0], // the date
-                dataset[i][1], // close
-            ]);
-
-            volume.push([
-                dataset[i][0], // the date
-                dataset[i][2] // the volume
-            ]);
-        }
-        Highcharts.setOptions({
-            time: {
-                /**
-                 * Use moment-timezone.js to return the timezone offset for individual
-                 * timestamps, used in the X axis labels and the tooltip header.
-                 */
-                getTimezoneOffset: function (timestamp) {
-                    var zone = 'Asia/Taipei',
-                        timezoneOffset = -moment.tz(timestamp, zone).utcOffset();
-
-                    return timezoneOffset;
+    const getStockPrice = async () => {
+        const response = await axios.get(
+            `https://stock-proxy-uyy2ythogq-de.a.run.app/tw_yahoo/_td-stock/api/resource/FinanceChartService.ApacLibraCharts;autoRefresh=1684373057125;symbols=%5B%22${stockID}%22%5D;type=tick`,
+            {
+                params: {
+                    lang: "zh-TW"
                 }
             }
-        });
-        setChartConfig({
-            rangeSelector: {
-                selected: 1
-            },
-            title: {
-                text: seriesName
-            },
-            yAxis: [{
-                labels: {
-                    align: 'right',
-                    x: -3
-                },
-                title: {
-                    text: 'OHLC'
-                },
-                height: '60%',
-                lineWidth: 2,
-                resize: {
-                    enabled: true
-                }
-            }, {
-                labels: {
-                    align: 'right',
-                    x: -3
-                },
-                title: {
-                    text: 'Volume'
-                },
-                top: '65%',
-                height: '35%',
-                offset: 0,
-                lineWidth: 2
-            }],
-            rangeSelector: {
-                buttons: [{
-                    type: 'all',
-                    text: 'All'
-                }]
-            },
-            navigator: {
-                enabled: false
-            },
-            series: [{
-                name: seriesName,
-                data: ohlc,
-                tooltip: {
-                    valueDecimals: 2
-                },
-                type: 'line'
-            }, {
-                type: 'column',
-                name: 'Volume',
-                data: volume,
-                yAxis: 1
-            }]
+        );
+        let chart = response.data['0'].chart;
+        let data = []
+        for (let i = 0; i < chart.timestamp.length; i++) {
+            if (chart.indicators.quote['0'].open[i] !== null) {
+                data.push({
+                    timestamp: chart.timestamp[i] * 1000,
+                    open: chart.indicators.quote['0'].open[i],
+                    close: chart.indicators.quote['0'].close[i],
+                    high: chart.indicators.quote['0'].high[i],
+                    low: chart.indicators.quote['0'].low[i],
+                    volume: chart.indicators.quote['0'].volume[i]
+                })
+            }
+        }
+        data.unshift({
+            timestamp: (chart.timestamp[0] - 100) * 1000,
+            open: chart.meta.previousClose,
+            close: chart.meta.previousClose,
+            high: chart.meta.previousClose,
+            low: chart.meta.previousClose,
         })
+        setDataSet(data);
+        setPreviousClose(chart.meta.previousClose);
+    }
+
+    useEffect(() => {
+        chart.current = init('technical-indicator-k-line')
+        chart.current?.setLocale('zh-TW')
+        chart.current?.setStyles({
+            candle: {
+                type: 'area',
+            },
+        });
+        chart.current?.createIndicator('VOL', false, { height: 100 })
+        return () => {
+            dispose('technical-indicator-k-line')
+        }
     }, [])
 
     useEffect(() => {
-        let ohlc = []
-        let volume = []
-        let dataLength = dataset.length
-        for (let i = 0; i < dataLength; i += 1) {
-            ohlc.push([
-                dataset[i][0], // the date
-                dataset[i][1], // close
-            ]);
+        getStockPrice();
+        const intervalId = setInterval(() => {
+            getStockPrice()
+        }, 60000);
+        return () => {
+            clearInterval(intervalId)
+        }
+    }, [stockID])
 
-            volume.push([
-                dataset[i][0], // the date
-                dataset[i][2] // the volume
-            ]);
-        }
-        let updateObject = {
-            title: {
-                text: seriesName
-            },
-            series: [{
-                name: seriesName,
-                data: ohlc,
-                tooltip: {
-                    valueDecimals: 2
-                },
-                type: 'line'
-            }, {
-                type: 'column',
-                name: 'Volume',
-                data: volume,
-                yAxis: 1
-            }]
-        }
-        setChartConfig(chartConfig => ({
-            ...chartConfig,
-            ...updateObject
-        }))
-    }, [dataset, seriesName])
+    useEffect(() => {
+        chart.current?.removeOverlay('priceLine')
+        chart.current?.applyNewData(dataSet)
+        chart.current?.createOverlay({ name: 'priceLine', points: [{ value: previousClose }], lock: true })
+    }, [dataSet])
 
     return (
-        <HighchartsReact
-            highcharts={Highcharts}
-            constructorType='stockChart'
-            options={chartConfig}
-            ref={chartRef}
-        />
+        <Layout title={seriesName}>
+            <div id="technical-indicator-k-line" style={{ width: '100%', height: '600px' }} />
+        </Layout>
     )
 }
