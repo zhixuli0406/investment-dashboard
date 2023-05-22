@@ -24,7 +24,7 @@ const intervalList = [
 ]
 
 export default function TechnicalIndicatorKLineChart(props) {
-    const { stockID, seriesName } = props
+    const { stockID, stockInfo } = props
     const [dataSet, setDataSet] = useState([])
     const [kLineType, setKLineType] = useState(intervalList[0])
     const chart = useRef();
@@ -100,7 +100,7 @@ export default function TechnicalIndicatorKLineChart(props) {
     }, [dataSet])
 
     return (
-        <Layout title={seriesName}>
+        <Layout stockInfo={stockInfo}>
             <Stack spacing={2} direction="row">
                 {
                     intervalList.map((item) => (

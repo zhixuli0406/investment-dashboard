@@ -1,6 +1,6 @@
 import React, { useEffect, useState, useRef } from 'react'
 import Highcharts from 'highcharts/highstock'
-import { init, dispose } from 'klinecharts'
+import { init, dispose, registerLocale } from 'klinecharts'
 import Layout from '../../Layout/ChartLayout/index'
 import axios from "axios";
 require('highcharts/indicators/indicators')(Highcharts)
@@ -10,7 +10,7 @@ require('highcharts/modules/exporting')(Highcharts)
 require('highcharts/modules/map')(Highcharts)
 
 export default function FinanceChart(props) {
-    const { stockID, seriesName } = props;
+    const { stockID, stockInfo } = props;
     const [dataSet, setDataSet] = useState([]);
     const [previousClose, setPreviousClose] = useState(0);
     const chart = useRef()
@@ -50,6 +50,14 @@ export default function FinanceChart(props) {
     }
 
     useEffect(() => {
+        registerLocale('zh-TW', {
+            time: '時間：',
+            open: '開：',
+            high: '高：',
+            low: '低：',
+            close: '收：',
+            volume: '成交量：'
+        })
         chart.current = init('technical-indicator-k-line')
         chart.current?.setLocale('zh-TW')
         chart.current?.setStyles({
@@ -74,9 +82,11 @@ export default function FinanceChart(props) {
     }, [stockID])
 
     useEffect(() => {
+        chart.current?.zoomAtCoordinate(0)
         chart.current?.removeOverlay('priceLine')
         chart.current?.applyNewData(dataSet)
         chart.current?.createOverlay({ name: 'priceLine', points: [{ value: previousClose }], lock: true })
+        chart.current?.zoomAtCoordinate(-8)
         chart.current?.setStyles({
             candle: {
                 tooltip: {
@@ -84,14 +94,14 @@ export default function FinanceChart(props) {
                     showType: 'rect'
                 }
             },
-            yAxis:{
+            yAxis: {
                 inside: true,
             }
         })
     }, [dataSet])
 
     return (
-        <Layout title={seriesName}>
+        <Layout stockInfo={stockInfo}>
             <div id="technical-indicator-k-line" style={{ width: '100%', height: '400px' }} />
         </Layout>
     )

@@ -35,7 +35,7 @@ function a11yProps(index) {
 
 const ChartPage = () => {
     let { stockID } = useParams();
-    const [stockName, setStockName] = useState("");
+    const [stockInfo, setStockInfo] = useState({});
     const [value, setValue] = useState(0);
 
     const handleChange = (event, newValue) => {
@@ -43,16 +43,11 @@ const ChartPage = () => {
     };
 
     const searchStock = async (stockID) => {
-        const response = await axios.get('https://stock-proxy-uyy2ythogq-de.a.run.app/yahoo_query1/v1/finance/search',
-            {
-                params: {
-                    q: stockID,
-                    lang: 'zh-TW',
-                    quotesCount: 8,
-                }
-            }
-        );
-        setStockName(response.data.quotes[0].longname ? response.data.quotes[0].longname : response.data.quotes[1].longname)
+        const response = await axios.get(`https://stock-proxy-uyy2ythogq-de.a.run.app/tw_yahoo/_td-stock/api/resource/StockServices.stockList;symbols=${stockID}`);
+        setStockInfo(stockInfo => ({
+            ...stockInfo,
+            ...response.data[0]
+        }))
     }
 
     useEffect(() => {
@@ -73,10 +68,10 @@ const ChartPage = () => {
                 <Tab label="技術分析" {...a11yProps(1)} />
             </Tabs>
             <TabPanel value={value} index={0} >
-                <FinanceChart stockID={stockID} seriesName={stockName} />
+                <FinanceChart stockID={stockID} stockInfo={stockInfo} />
             </TabPanel>
             <TabPanel value={value} index={1}>
-                <TechnicalIndicatorKLineChart stockID={stockID} seriesName={stockName} />
+                <TechnicalIndicatorKLineChart stockID={stockID} stockInfo={stockInfo} />
             </TabPanel>
         </Card >
     )

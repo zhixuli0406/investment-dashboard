@@ -49,7 +49,6 @@ const Search = () => {
             options={stockList}
             value={value}
             onChange={(event, newValue) => {
-                setStockList(newValue ? [newValue, ...stockList] : stockList);
                 setValue(newValue);
             }}
             onInputChange={(event, newInputValue) => {
