@@ -71,6 +71,23 @@ export default function TechnicalIndicatorKLineChart(props) {
         chart.current?.setLocale('zh-TW')
         chart.current?.createIndicator('MA', false, { id: 'candle_pane' })
         chart.current?.createIndicator('VOL', false, { height: 100 })
+        chart.current?.setStyles({
+            candle: {
+                tooltip: {
+                    showRule: 'follow_cross',
+                    showType: 'rect'
+                }
+            },
+            yAxis: {
+                inside: true,
+            },
+            indicator: {
+                tooltip: {
+                    showRule: 'follow_cross',
+                    showType: 'rect'
+                }
+            }
+        })
         return () => { dispose('technical-indicator-k-line') }
     }, [])
 
@@ -97,7 +114,7 @@ export default function TechnicalIndicatorKLineChart(props) {
                     ))
                 }
             </Stack>
-            <div id="technical-indicator-k-line" style={{ width: '100%', height: '600px' }} />
+            <div id="technical-indicator-k-line" style={{ width: '100%', height: '400px' }} />
         </Layout>
     )
 }

@@ -77,11 +77,22 @@ export default function FinanceChart(props) {
         chart.current?.removeOverlay('priceLine')
         chart.current?.applyNewData(dataSet)
         chart.current?.createOverlay({ name: 'priceLine', points: [{ value: previousClose }], lock: true })
+        chart.current?.setStyles({
+            candle: {
+                tooltip: {
+                    showRule: 'follow_cross',
+                    showType: 'rect'
+                }
+            },
+            yAxis:{
+                inside: true,
+            }
+        })
     }, [dataSet])
 
     return (
         <Layout title={seriesName}>
-            <div id="technical-indicator-k-line" style={{ width: '100%', height: '600px' }} />
+            <div id="technical-indicator-k-line" style={{ width: '100%', height: '400px' }} />
         </Layout>
     )
 }
