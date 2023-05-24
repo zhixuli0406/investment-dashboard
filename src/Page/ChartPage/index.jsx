@@ -52,6 +52,12 @@ const ChartPage = () => {
 
     useEffect(() => {
         searchStock(stockID)
+        const intervalId = setInterval(() => {
+            searchStock(stockID)
+        }, 60000);
+        return () => {
+            clearInterval(intervalId)
+        }
     }, [stockID])
 
     return (
