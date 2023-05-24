@@ -1,5 +1,5 @@
 import React from 'react'
-import { Box, CircularProgress, Container, Snackbar, Toolbar, Typography, Grid, Stack, Chip, TextField, Autocomplete } from "@mui/material";
+import { Box, Typography, Stack, Chip } from "@mui/material";
 import ArrowDropUpIcon from '@mui/icons-material/ArrowDropUp';
 import ArrowDropDownIcon from '@mui/icons-material/ArrowDropDown';
 
@@ -19,13 +19,21 @@ export default function Layout({ stockInfo, children }) {
         {
           parseFloat(stockInfo.change) >= 0 ?
             <>
-              <Typography variant="body1" sx={{ fontSize: '25px', color: 'red', fontWeight: 'bold' }}>{stockInfo.price}</Typography>
-              <Chip icon={<ArrowDropUpIcon />} label={stockInfo.change} sx={{ color: 'red', fontWeight: 'bold', fontSize: '20px' }} />
+              <Typography variant="body1" sx={{ fontSize: '30px', color: 'red', fontWeight: 'bold' }}>{stockInfo.price}</Typography>
+              <Typography variant="body1" sx={{ fontSize: '20px', color: 'red', fontWeight: 'bold' }}>
+                <ArrowDropUpIcon sx={{ color: 'red', width: '20px', height: '20px' }} />
+                {stockInfo.change}
+              </Typography>
+              <Typography variant="body1" sx={{ fontSize: '20px', color: 'red', fontWeight: 'bold' }}>{`(${(stockInfo.change / stockInfo.price * 100).toFixed(2)}%)`}</Typography>
             </>
             :
             <>
-              <Typography variant="body1" sx={{ fontSize: '25px', color: 'green', fontWeight: 'bold' }}>{stockInfo.price}</Typography>
-              <Chip icon={<ArrowDropDownIcon />} label={stockInfo.change} sx={{ color: 'green', fontWeight: 'bold', fontSize: '20px' }} />
+              <Typography variant="body1" sx={{ fontSize: '30px', color: 'green', fontWeight: 'bold' }}>{stockInfo.price}</Typography>
+              <Typography variant="body1" sx={{ fontSize: '20px', color: 'green', fontWeight: 'bold' }}>
+                <ArrowDropDownIcon sx={{ color: 'green', width: '20px', height: '20px' }} />
+                {stockInfo.change}
+              </Typography>
+              <Typography variant="body1" sx={{ fontSize: '20px', color: 'green', fontWeight: 'bold' }}>{`(${(stockInfo.change / stockInfo.price * 100).toFixed(2)}%)`}</Typography>
             </>
         }
       </Stack>
