@@ -160,7 +160,7 @@ export default function FinanceChart(props) {
                 </Grid>
                 <Grid item xs={6}>
                     <div className='Fx(n) Bxz(bb)'>
-                        <ul className='D(f) Fld(c) Flw(w) H(192px) Pstart(0px)'>
+                        <ul className='D(f) Fld(c) Flw(w) H(192px) Pstart(0px) Mt(0)'>
                             {
                                 stockInfoList.map((item) => (
                                     <li className="price-detail-item H(32px) Mx(16px) D(f) Jc(sb) Ai(c) Bxz(bb) Px(0px) Py(4px) Bdbs(s) Bdbc($bd-primary-divider) Bdbw(1px)">
