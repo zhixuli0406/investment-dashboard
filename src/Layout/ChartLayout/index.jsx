@@ -7,8 +7,8 @@ export default function Layout({ stockInfo, children }) {
   return (
     <Box className="k-line-chart-container">
       <Stack direction="row" spacing={1} sx={{ mt: 2, mb: 1, alignItems: 'center' }}>
-        <Typography variant="body1" sx={{ fontSize: '25px' }}>{stockInfo.symbolName}</Typography>
-        <Typography variant="body1" sx={{ fontWeight: 'bold', color: 'gray', fontSize: '20px' }}>{stockInfo.systexId}</Typography>
+        <Typography variant="body1" sx={{ fontSize: '35px' }}>{stockInfo.symbolName}</Typography>
+        <Typography variant="body1" sx={{ fontWeight: 'bold', color: 'gray', fontSize: '30px' }}>{stockInfo.systexId}</Typography>
         {
           stockInfo.sectorName !== null ?
             <Chip label={stockInfo.sectorName} color="primary" size="small" /> : null
@@ -19,21 +19,21 @@ export default function Layout({ stockInfo, children }) {
         {
           parseFloat(stockInfo.change) >= 0 ?
             <>
-              <Typography variant="body1" sx={{ fontSize: '30px', color: 'red', fontWeight: 'bold' }}>{stockInfo.price}</Typography>
-              <Typography variant="body1" sx={{ fontSize: '20px', color: 'red', fontWeight: 'bold' }}>
-                <ArrowDropUpIcon sx={{ color: 'red', width: '20px', height: '20px' }} />
+              <Typography variant="body1" sx={{ fontSize: '35px', color: 'red', fontWeight: 'bold' }}>{stockInfo.price}</Typography>
+              <Typography variant="body1" sx={{ fontSize: '25px', color: 'red', fontWeight: 'bold' }}>
+                <ArrowDropUpIcon sx={{ color: 'red', width: '25px', height: '25px' }} />
                 {stockInfo.change}
               </Typography>
-              <Typography variant="body1" sx={{ fontSize: '20px', color: 'red', fontWeight: 'bold' }}>{`(${(stockInfo.change / stockInfo.price * 100).toFixed(2)}%)`}</Typography>
+              <Typography variant="body1" sx={{ fontSize: '25px', color: 'red', fontWeight: 'bold' }}>{`(${(stockInfo.change / stockInfo.price * 100).toFixed(2)}%)`}</Typography>
             </>
             :
             <>
-              <Typography variant="body1" sx={{ fontSize: '30px', color: 'green', fontWeight: 'bold' }}>{stockInfo.price}</Typography>
-              <Typography variant="body1" sx={{ fontSize: '20px', color: 'green', fontWeight: 'bold' }}>
-                <ArrowDropDownIcon sx={{ color: 'green', width: '20px', height: '20px' }} />
+              <Typography variant="body1" sx={{ fontSize: '35px', color: 'green', fontWeight: 'bold' }}>{stockInfo.price}</Typography>
+              <Typography variant="body1" sx={{ fontSize: '25px', color: 'green', fontWeight: 'bold' }}>
+                <ArrowDropDownIcon sx={{ color: 'green', width: '25px', height: '25px' }} />
                 {stockInfo.change}
               </Typography>
-              <Typography variant="body1" sx={{ fontSize: '20px', color: 'green', fontWeight: 'bold' }}>{`(${(stockInfo.change / stockInfo.price * 100).toFixed(2)}%)`}</Typography>
+              <Typography variant="body1" sx={{ fontSize: '25px', color: 'green', fontWeight: 'bold' }}>{`(${(stockInfo.change / stockInfo.price * 100).toFixed(2)}%)`}</Typography>
             </>
         }
       </Stack>

@@ -27,7 +27,8 @@ const Search = () => {
                 }
             }
         );
-        setStockList(response.data.quotes)
+        setStockList([]);
+        setStockList(response.data.quotes);
     }
     useEffect(() => {
         if (value)
