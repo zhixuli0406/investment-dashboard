@@ -156,7 +156,7 @@ export default function FinanceChart(props) {
         <Layout stockInfo={stockInfo}>
             <Grid container spacing={2}>
                 <Grid item xs={6} >
-                    <div id="finance-chart" style={{ width: '100%', height: '96%' }} />
+                    <div id="finance-chart" style={{ width: '100%', height: '471px' }} />
                 </Grid>
                 <Grid item xs={6}>
                     <div className='Fx(n) Bxz(bb)'>
