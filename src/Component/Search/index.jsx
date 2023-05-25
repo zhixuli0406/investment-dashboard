@@ -18,7 +18,7 @@ const Search = () => {
     }, [inputValue])
 
     const searchStockList = async () => {
-        const response = await axios.get('https://stock-proxy-uyy2ythogq-de.a.run.app/yahoo_query1/v1/finance/search',
+        const response = await axios.get('https://stock-proxy-uyy2ythogq-de.a.run.app/yahoo/v1/finance/search',
             {
                 params: {
                     q: inputValue,

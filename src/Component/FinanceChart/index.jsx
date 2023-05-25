@@ -30,7 +30,7 @@ export default function FinanceChart(props) {
 
     const getStockPrice = async () => {
         const response = await axios.get(
-            `https://stock-proxy-uyy2ythogq-de.a.run.app/tw_yahoo/_td-stock/api/resource/FinanceChartService.ApacLibraCharts;autoRefresh=1684373057125;symbols=%5B%22${stockID}%22%5D;type=tick`,
+            `https://stock-proxy-uyy2ythogq-de.a.run.app/tw_yahoo/FinanceChartService.ApacLibraCharts;autoRefresh=1684373057125;symbols=%5B%22${stockID}%22%5D;type=tick`,
             {
                 params: {
                     lang: "zh-TW"
@@ -138,7 +138,7 @@ export default function FinanceChart(props) {
         chart.current?.removeOverlay('priceLine')
         chart.current?.applyNewData(dataSet)
         chart.current?.createOverlay({ name: 'priceLine', points: [{ value: previousClose }], lock: true })
-        chart.current?.zoomAtCoordinate(-8)
+        chart.current?.zoomAtCoordinate(-5)
         chart.current?.setStyles({
             candle: {
                 tooltip: {

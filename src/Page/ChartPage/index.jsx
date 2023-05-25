@@ -43,7 +43,7 @@ const ChartPage = () => {
     };
 
     const searchStock = async (stockID) => {
-        const response = await axios.get(`https://stock-proxy-uyy2ythogq-de.a.run.app/tw_yahoo/_td-stock/api/resource/StockServices.stockList;fields=avgPrice%2Corderbook;symbols=${stockID}`);
+        const response = await axios.get(`https://stock-proxy-uyy2ythogq-de.a.run.app/tw_yahoo/StockServices.stockList;fields=avgPrice%2Corderbook;symbols=${stockID}`);
         setStockInfo(stockInfo => ({
             ...stockInfo,
             ...response.data[0]

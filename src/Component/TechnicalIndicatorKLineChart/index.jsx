@@ -31,7 +31,7 @@ export default function TechnicalIndicatorKLineChart(props) {
 
     const getStockPrice = async () => {
         const response = await axios.get(
-            `https://stock-proxy-uyy2ythogq-de.a.run.app/yahoo_query1/v8/finance/chart/${stockID}`,
+            `https://stock-proxy-uyy2ythogq-de.a.run.app/yahoo/v8/finance/chart/${stockID}`,
             {
                 params: {
                     symbol: stockID,
@@ -46,14 +46,16 @@ export default function TechnicalIndicatorKLineChart(props) {
         let chart = response.data.chart.result['0'];
         let data = []
         for (let i = 0; i < chart.timestamp.length; i++) {
-            data.push({
-                timestamp: chart.timestamp[i] * 1000,
-                open: chart.indicators.quote['0'].open[i],
-                close: chart.indicators.quote['0'].close[i],
-                high: chart.indicators.quote['0'].high[i],
-                low: chart.indicators.quote['0'].low[i],
-                volume: chart.indicators.quote['0'].volume[i]
-            })
+            if (chart.indicators.quote['0'].open[i] !== 0) {
+                data.push({
+                    timestamp: chart.timestamp[i] * 1000,
+                    open: chart.indicators.quote['0'].open[i],
+                    close: chart.indicators.quote['0'].close[i],
+                    high: chart.indicators.quote['0'].high[i],
+                    low: chart.indicators.quote['0'].low[i],
+                    volume: chart.indicators.quote['0'].volume[i]
+                })
+            }
         }
         setDataSet(data)
     }
