@@ -171,7 +171,7 @@ export default function FinanceChart(props) {
                             }
                         </ul>
                     </div>
-                    <div className="Mt(24px) Mx(16px)">
+                    <div className="Mt(12px) Mx(16px)">
                         <div className="D(f) Jc(sb) Ai(c) Mb(4px) Fz(16px)--mobile Fz(14px)">
                             <div className="C(#232a31) Fw(b)">
                                 <span>內盤</span>

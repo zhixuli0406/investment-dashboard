@@ -1,7 +1,13 @@
 import { useEffect, useState } from "react";
 import axios from "axios";
-import { Tab, Card, Tabs, Box } from '@mui/material/';
-import { useParams } from 'react-router-dom';
+import { Tab, Card, Tabs, Box, Grid, Button, Typography } from '@mui/material/';
+import Table from '@mui/material/Table';
+import TableBody from '@mui/material/TableBody';
+import TableCell from '@mui/material/TableCell';
+import TableContainer from '@mui/material/TableContainer';
+import TableHead from '@mui/material/TableHead';
+import TableRow from '@mui/material/TableRow';
+import { useParams, useNavigate } from 'react-router-dom';
 import TechnicalIndicatorKLineChart from "../../Component/TechnicalIndicatorKLineChart";
 import FinanceChart from "../../Component/FinanceChart";
 
@@ -36,7 +42,9 @@ function a11yProps(index) {
 const ChartPage = () => {
     let { stockID } = useParams();
     const [stockInfo, setStockInfo] = useState({});
+    const [recommended, setRecommended] = useState([]);
     const [value, setValue] = useState(0);
+    const navigate = useNavigate();
 
     const handleChange = (event, newValue) => {
         setValue(newValue);
@@ -50,8 +58,14 @@ const ChartPage = () => {
         }))
     }
 
+    const recommendedTickers = async (stockID) => {
+        const response = await axios.get(`https://stock-proxy-uyy2ythogq-de.a.run.app/tw_yahoo/StockServices.recommendedTickers;symbol=${stockID}`);
+        setRecommended(response.data.stockList)
+    }
+
     useEffect(() => {
         searchStock(stockID)
+        recommendedTickers(stockID)
         const intervalId = setInterval(() => {
             searchStock(stockID)
         }, 60000);
@@ -61,25 +75,70 @@ const ChartPage = () => {
     }, [stockID])
 
     return (
-        <Card sx={{ mt: 2, mb: 2 }}>
-            <Tabs
-                value={value}
-                onChange={handleChange}
-                indicatorColor="secondary"
-                textColor="inherit"
-                variant="fullWidth"
-                aria-label="full width tabs example"
-            >
-                <Tab label="走勢圖" {...a11yProps(0)} />
-                <Tab label="技術分析" {...a11yProps(1)} />
-            </Tabs>
-            <TabPanel value={value} index={0} >
-                <FinanceChart stockID={stockID} stockInfo={stockInfo} />
-            </TabPanel>
-            <TabPanel value={value} index={1}>
-                <TechnicalIndicatorKLineChart stockID={stockID} stockInfo={stockInfo} />
-            </TabPanel>
-        </Card >
+        <Grid container spacing={2}>
+            <Grid item xs={8}>
+                <Card sx={{ mt: 2, mb: 2, borderRadius: '10px', height: '650px' }}>
+                    <Tabs
+                        value={value}
+                        onChange={handleChange}
+                        indicatorColor="secondary"
+                        textColor="inherit"
+                        variant="fullWidth"
+                        aria-label="full width tabs example"
+                    >
+                        <Tab label="走勢圖" {...a11yProps(0)} />
+                        <Tab label="技術分析" {...a11yProps(1)} />
+                    </Tabs>
+                    <TabPanel value={value} index={0} >
+                        <FinanceChart stockID={stockID} stockInfo={stockInfo} />
+                    </TabPanel>
+                    <TabPanel value={value} index={1}>
+                        <TechnicalIndicatorKLineChart stockID={stockID} stockInfo={stockInfo} />
+                    </TabPanel>
+                </Card >
+            </Grid>
+            <Grid item xs={4}>
+                <Card sx={{ mt: 2, mb: 2, borderRadius: '10px', p: 2, height: '650px' }}>
+                    <Typography
+                        sx={{ flex: '1 1 100%' }}
+                        variant="h5"
+                        id="網友也在看"
+                        component="div"
+                    >
+                        網友也在看
+                    </Typography>
+                    <TableContainer sx={{ overflow: 'hidden', mt: 2 }}>
+                        <Table >
+                            <TableHead>
+                                <TableRow>
+                                    <TableCell>股票名稱(股號)</TableCell>
+                                    <TableCell>價格</TableCell>
+                                    <TableCell align="right">漲跌幅</TableCell>
+                                    <TableCell align="right">成交量</TableCell>
+                                </TableRow>
+                            </TableHead>
+                            <TableBody>
+                                {
+                                    recommended.map((item) => (
+                                        <TableRow
+                                            key={item.symbol}
+                                            sx={{ '&:last-child td, &:last-child th': { border: 0 } }}
+                                        >
+                                            <TableCell component="th" scope="row">
+                                                <Button variant="text" onClick={() => navigate(`/${item.symbol}`)}>{`${item.symbolName}(${item.symbol})`}</Button>
+                                            </TableCell>
+                                            <TableCell sx={{ color: (parseFloat(item.change) < 0 ? 'green' : 'red') }}>{`${item.price}`}</TableCell>
+                                            <TableCell sx={{ color: (parseFloat(item.change) < 0 ? 'green' : 'red') }}>{`${item.change}(${item.changePercent})`}</TableCell>
+                                            <TableCell >{item.volume}</TableCell>
+                                        </TableRow>
+                                    ))
+                                }
+                            </TableBody>
+                        </Table>
+                    </TableContainer>
+                </Card >
+            </Grid>
+        </Grid>
     )
 }
 
