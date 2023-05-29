@@ -27,7 +27,6 @@ const Search = () => {
                 }
             }
         );
-        setStockList([]);
         setStockList(response.data.quotes);
     }
     useEffect(() => {
@@ -38,14 +37,11 @@ const Search = () => {
         <Autocomplete
             freeSolo
             id="stock-search"
-            disableClearable
             getOptionLabel={(option) =>
                 typeof option === 'string' ? option : option.symbol
             }
-            filterOptions={(x) => x}
             autoComplete
             includeInputInList
-            filterSelectedOptions
             noOptionsText="找不到搜尋的股票"
             options={stockList}
             value={value}

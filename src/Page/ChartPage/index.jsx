@@ -68,7 +68,7 @@ const ChartPage = () => {
         recommendedTickers(stockID)
         const intervalId = setInterval(() => {
             searchStock(stockID)
-        }, 60000);
+        }, 10000);
         return () => {
             clearInterval(intervalId)
         }
