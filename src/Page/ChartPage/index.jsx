@@ -10,6 +10,7 @@ import TableRow from '@mui/material/TableRow';
 import { useParams, useNavigate } from 'react-router-dom';
 import TechnicalIndicatorKLineChart from "../../Component/TechnicalIndicatorKLineChart";
 import FinanceChart from "../../Component/FinanceChart";
+import TimeSales from "../../Component/TimeSales";
 
 function TabPanel(props) {
     const { children, value, index, ...other } = props;
@@ -88,12 +89,16 @@ const ChartPage = () => {
                     >
                         <Tab label="走勢圖" {...a11yProps(0)} />
                         <Tab label="技術分析" {...a11yProps(1)} />
+                        <Tab label="成交彙整" {...a11yProps(2)} />
                     </Tabs>
                     <TabPanel value={value} index={0} >
                         <FinanceChart stockID={stockID} stockInfo={stockInfo} />
                     </TabPanel>
                     <TabPanel value={value} index={1}>
                         <TechnicalIndicatorKLineChart stockID={stockID} stockInfo={stockInfo} />
+                    </TabPanel>
+                    <TabPanel value={value} index={2}>
+                        <TimeSales stockID={stockID} stockInfo={stockInfo} />
                     </TabPanel>
                 </Card >
             </Grid>
