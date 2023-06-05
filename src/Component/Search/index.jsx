@@ -23,11 +23,16 @@ const Search = () => {
                 params: {
                     q: inputValue,
                     lang: 'zh-TW',
-                    quotesCount: 8,
+                    quotesCount: 20,
                 }
             }
         );
-        setStockList(response.data.quotes);
+        let data = []
+        response.data.quotes.map((item) => {
+            if (item.exchDisp === "台北" || item.exchDisp === '台灣')
+                data.push(item)
+        })
+        setStockList(data);
     }
     useEffect(() => {
         if (value)
@@ -54,7 +59,7 @@ const Search = () => {
             renderInput={(params) => (
                 <TextField
                     {...params}
-                    label="搜尋股票代碼或名稱"
+                    label="搜尋股票代碼"
                     fullWidth
                 />
             )}
