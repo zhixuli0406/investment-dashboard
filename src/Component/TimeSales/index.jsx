@@ -21,6 +21,7 @@ const TimeSales = (props) => {
     const [priceByVolumes, setPriceByVolumes] = useState([])
     const [priceByTimes, setPriceByTimes] = useState([]);
     const [offsetNumber, setOffsetNumber] = useState(30);
+    const [moreDisabled, setMoreDisable] = useState(false);
 
     const getPriceByVolumes = async () => {
         const response = await axios.get(
@@ -37,8 +38,7 @@ const TimeSales = (props) => {
                 apiToken: process.env.REACT_APP_FUGLE_API_KEY,
                 limit: 30
             }
-        }
-        );
+        });
         setPriceByTimes(priceByTimes => [...priceByTimes, ...response.data.data.dealts,])
     }
 
@@ -48,24 +48,19 @@ const TimeSales = (props) => {
             params: {
                 symbolId: stockID.split('.')[0],
                 apiToken: process.env.REACT_APP_FUGLE_API_KEY,
-                limit: 30,
+                limit: 500,
                 offset: offsetNumber
             }
+        });
+        if (response.data.data.dealts.length === 0) {
+            setMoreDisable(true);
         }
-        );
         setPriceByTimes(priceByTimes => [...priceByTimes, ...response.data.data.dealts])
     }
 
     useEffect(() => {
         getPriceByTimes();
         getPriceByVolumes();
-        const intervalId = setInterval(() => {
-            getPriceByTimes();
-            getPriceByVolumes();
-        }, 20000);
-        return () => {
-            clearInterval(intervalId)
-        }
     }, [])
 
     return (
@@ -74,7 +69,7 @@ const TimeSales = (props) => {
                 <Grid item xs={6}>
                     <Grid container spacing={2}>
                         <Grid item xs={6}><Typography variant="body1" sx={{ fontSize: '35px' }}>成交彙整</Typography></Grid>
-                        <Grid item xs={6}><Typography variant="caption">資料時間：{moment(priceByTimes[0]?.at).format('YYYY/MM/DD HH:mm:ss')}</Typography></Grid>
+                        <Grid item xs={6} sx={{ placeSelf: 'center', textAlign: 'center' }}><Typography variant="caption">資料時間：{moment(priceByTimes[0]?.at).format('YYYY/MM/DD HH:mm:ss')}</Typography></Grid>
                     </Grid>
                     <Paper sx={{ width: '100%', overflow: 'hidden' }}>
                         <TableContainer className="table" sx={{ maxHeight: 370 }}>
@@ -131,9 +126,10 @@ const TimeSales = (props) => {
                         <Button
                             variant="text"
                             onClick={() => {
-                                setOffsetNumber(offsetNumber => offsetNumber + 30)
+                                setOffsetNumber(offsetNumber => offsetNumber + 500)
                                 getMorePriceByTimes();
                             }}
+                            disabled={moreDisabled}
                             sx={{ p: 2 }}
                         >
                             載入更多
