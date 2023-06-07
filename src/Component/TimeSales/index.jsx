@@ -22,12 +22,22 @@ const TimeSales = (props) => {
     const [priceByTimes, setPriceByTimes] = useState([]);
     const [offsetNumber, setOffsetNumber] = useState(30);
     const [moreDisabled, setMoreDisable] = useState(false);
+    const [allVolumes, setAllVolumes] = useState(0)
 
     const getPriceByVolumes = async () => {
         const response = await axios.get(
-            `https://stock-proxy-uyy2ythogq-de.a.run.app/tw_yahoo/StockServices.priceByVolumes;symbol=${stockID}`
-        );
-        setPriceByVolumes(response.data.priceByVolumes)
+            `https://api.fugle.tw/realtime/v0.3/intraday/volumes`, {
+            params: {
+                symbolId: stockID.split('.')[0],
+                apiToken: process.env.REACT_APP_FUGLE_API_KEY
+            }
+        });
+        let volume = 0
+        for (let i = 0; i < stockInfo.orderbook.length; i++) {
+            volume += response.data.data.volumes[i].volume
+        }
+        setAllVolumes(volume)
+        setPriceByVolumes(response.data.data.volumes)
     }
 
     const getPriceByTimes = async () => {
@@ -138,7 +148,51 @@ const TimeSales = (props) => {
                     </Paper>
                 </Grid>
                 <Grid item xs={6}>
-
+                    <Grid container spacing={2}>
+                        <Grid item xs={6}><Typography variant="body1" sx={{ fontSize: '35px' }}>價量變化</Typography></Grid>
+                        <Grid item xs={6} sx={{ placeSelf: 'center', textAlign: 'center' }}><Typography variant="caption">資料時間：{moment(priceByTimes[0]?.at).format('YYYY/MM/DD HH:mm:ss')}</Typography></Grid>
+                    </Grid>
+                    <Paper sx={{ width: '100%', overflow: 'hidden' }}>
+                        <TableContainer className="table" sx={{ maxHeight: 426.5 }}>
+                            <Table stickyHeader >
+                                <TableHead>
+                                    <TableRow>
+                                        <TableCell align="center">
+                                            成交價
+                                        </TableCell>
+                                        <TableCell align="center">
+                                        </TableCell>
+                                        <TableCell align="center">
+                                            成交張數
+                                        </TableCell>
+                                    </TableRow>
+                                </TableHead>
+                                <TableBody>
+                                    {
+                                        priceByVolumes.sort(function (a, b) {
+                                            return a.price < b.price ? 1 : -1;
+                                        }).map((row) => {
+                                            return (
+                                                <TableRow>
+                                                    <TableCell align="center">
+                                                        {row.price}
+                                                    </TableCell>
+                                                    <TableCell>
+                                                        <div className="Fxg(1)">
+                                                            <div className='Mstart(4px) Bgc(#85bdf2) H(20px) Bdrs(2px) Maw(280px)--mobile' style={{ width: `${row.volume / allVolumes * 100}%` }}></div>
+                                                        </div>
+                                                    </TableCell>
+                                                    <TableCell align="center">
+                                                        {row.volume}
+                                                    </TableCell>
+                                                </TableRow>
+                                            )
+                                        })
+                                    }
+                                </TableBody>
+                            </Table>
+                        </TableContainer>
+                    </Paper>
                 </Grid>
             </Grid>
         </Layout >
