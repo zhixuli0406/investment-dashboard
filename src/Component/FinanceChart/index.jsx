@@ -4,7 +4,7 @@ import { init, dispose, registerLocale } from 'klinecharts'
 import Layout from '../../Layout/ChartLayout/index'
 import axios from "axios";
 import Grid from '@mui/material/Grid';
-import './index.css';
+import '../../css/index.css';
 import useWindowSize from '../../Hook/useWindowSize';
 require('highcharts/indicators/indicators')(Highcharts)
 require('highcharts/indicators/pivot-points')(Highcharts)

@@ -7,27 +7,20 @@ import TableBody from '@mui/material/TableBody';
 import TableCell from '@mui/material/TableCell';
 import TableContainer from '@mui/material/TableContainer';
 import TableHead from '@mui/material/TableHead';
-import TablePagination from '@mui/material/TablePagination';
+import Button from '@mui/material/Button';
+import Typography from '@mui/material/Typography';
+import KeyboardArrowDownIcon from '@mui/icons-material/KeyboardArrowDown';
 import TableRow from '@mui/material/TableRow';
 import axios from "axios";
-import './index.css'
+import '../../css/index.css'
+import '../../css/TimeSales.css'
 import Layout from "../../Layout/ChartLayout";
 
 const TimeSales = (props) => {
     const { stockID, stockInfo } = props;
     const [priceByVolumes, setPriceByVolumes] = useState([])
-    const [priceByTimes, setPriceByTimes] = useState([])
-    const [page, setPage] = useState(0);
-    const [rowsPerPage, setRowsPerPage] = useState(10);
-
-    const handleChangePage = (event, newPage) => {
-        setPage(newPage);
-    };
-
-    const handleChangeRowsPerPage = (event) => {
-        setRowsPerPage(+event.target.value);
-        setPage(0);
-    };
+    const [priceByTimes, setPriceByTimes] = useState([]);
+    const [offsetNumber, setOffsetNumber] = useState(30);
 
     const getPriceByVolumes = async () => {
         const response = await axios.get(
@@ -42,11 +35,25 @@ const TimeSales = (props) => {
             params: {
                 symbolId: stockID.split('.')[0],
                 apiToken: process.env.REACT_APP_FUGLE_API_KEY,
-                limit: 500
+                limit: 30
             }
         }
         );
-        setPriceByTimes(response.data.data.dealts)
+        setPriceByTimes(priceByTimes => [...priceByTimes, ...response.data.data.dealts,])
+    }
+
+    const getMorePriceByTimes = async () => {
+        const response = await axios.get(
+            `https://api.fugle.tw/realtime/v0.3/intraday/dealts`, {
+            params: {
+                symbolId: stockID.split('.')[0],
+                apiToken: process.env.REACT_APP_FUGLE_API_KEY,
+                limit: 30,
+                offset: offsetNumber
+            }
+        }
+        );
+        setPriceByTimes(priceByTimes => [...priceByTimes, ...response.data.data.dealts])
     }
 
     useEffect(() => {
@@ -55,7 +62,7 @@ const TimeSales = (props) => {
         const intervalId = setInterval(() => {
             getPriceByTimes();
             getPriceByVolumes();
-        }, 60000);
+        }, 20000);
         return () => {
             clearInterval(intervalId)
         }
@@ -65,12 +72,16 @@ const TimeSales = (props) => {
         <Layout stockInfo={stockInfo}>
             <Grid container spacing={2}>
                 <Grid item xs={6}>
+                    <Grid container spacing={2}>
+                        <Grid item xs={6}><Typography variant="body1" sx={{ fontSize: '35px' }}>成交彙整</Typography></Grid>
+                        <Grid item xs={6}><Typography variant="caption">資料時間：{moment(priceByTimes[0]?.at).format('YYYY/MM/DD HH:mm:ss')}</Typography></Grid>
+                    </Grid>
                     <Paper sx={{ width: '100%', overflow: 'hidden' }}>
-                        <TableContainer className="table" sx={{ maxHeight: 430 }}>
+                        <TableContainer className="table" sx={{ maxHeight: 370 }}>
                             <Table stickyHeader >
                                 <TableHead>
                                     <TableRow>
-                                        <TableCell align="center">
+                                        <TableCell>
                                             時間
                                         </TableCell>
                                         <TableCell align="center">
@@ -86,10 +97,9 @@ const TimeSales = (props) => {
                                 </TableHead>
                                 <TableBody>
                                     {
-                                        (rowsPerPage > 0
-                                            ? priceByTimes.slice(page * rowsPerPage, page * rowsPerPage + rowsPerPage)
-                                            : priceByTimes
-                                        ).map((row) => {
+                                        priceByTimes.sort(function (a, b) {
+                                            return a.at < b.at ? 1 : -1;
+                                        }).map((row) => {
                                             let color = 'green';
                                             if (row.price - stockInfo.regularMarketPreviousClose === 0) {
                                                 color = 'black'
@@ -99,7 +109,7 @@ const TimeSales = (props) => {
                                             }
                                             return (
                                                 <TableRow>
-                                                    <TableCell align="center">
+                                                    <TableCell>
                                                         {moment(row.at).format('HH:mm:ss')}
                                                     </TableCell>
                                                     <TableCell align="center">
@@ -118,22 +128,24 @@ const TimeSales = (props) => {
                                 </TableBody>
                             </Table>
                         </TableContainer>
-                        <TablePagination
-                            rowsPerPageOptions={[10, 25, 100]}
-                            component="div"
-                            count={priceByTimes.length}
-                            rowsPerPage={rowsPerPage}
-                            page={page}
-                            onPageChange={handleChangePage}
-                            onRowsPerPageChange={handleChangeRowsPerPage}
-                        />
+                        <Button
+                            variant="text"
+                            onClick={() => {
+                                setOffsetNumber(offsetNumber => offsetNumber + 30)
+                                getMorePriceByTimes();
+                            }}
+                            sx={{ p: 2 }}
+                        >
+                            載入更多
+                            <KeyboardArrowDownIcon />
+                        </Button>
                     </Paper>
                 </Grid>
                 <Grid item xs={6}>
 
                 </Grid>
             </Grid>
-        </Layout>
+        </Layout >
     )
 }
 
