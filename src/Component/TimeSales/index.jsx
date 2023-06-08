@@ -33,7 +33,7 @@ const TimeSales = (props) => {
             }
         });
         let volume = 0
-        for (let i = 0; i < stockInfo.orderbook.length; i++) {
+        for (let i = 0; i < response.data.data.volumes.length; i++) {
             volume += response.data.data.volumes[i].volume
         }
         setAllVolumes(volume)
