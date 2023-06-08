@@ -7,7 +7,7 @@ export default function Layout({ stockInfo, children }) {
   return (
     <Box className="k-line-chart-container">
       <Grid container spacing={2}>
-        <Grid item xs={6}>
+        <Grid item xs={8}>
           <Stack direction="row" spacing={1} sx={{ mt: 2, mb: 1, alignItems: 'center' }}>
             <Typography variant="body1" sx={{ fontSize: '35px' }}>{stockInfo.symbolName}</Typography>
             <Typography variant="body1" sx={{ fontWeight: 'bold', color: 'gray', fontSize: '30px' }}>{stockInfo.systexId}</Typography>
@@ -17,7 +17,7 @@ export default function Layout({ stockInfo, children }) {
             }
           </Stack>
         </Grid>
-        <Grid item xs={6}>
+        <Grid item xs={4}>
           <Stack direction="row" spacing={1} sx={{ mt: 1, mb: 2, ml: 2, alignItems: 'center', justifyContent: 'end' }}>
             {
               parseFloat(stockInfo.change) >= 0 ?
@@ -42,9 +42,6 @@ export default function Layout({ stockInfo, children }) {
           </Stack>
         </Grid>
       </Grid>
-
-
-
       {children}
     </Box >
   )

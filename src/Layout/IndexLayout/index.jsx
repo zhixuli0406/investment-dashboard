@@ -8,7 +8,7 @@ const IndexLayout = () => {
     const navigate = useNavigate();
     return (
         <Container maxWidth="xl" sx={{ p: 1 }}>
-            <AppBar position="sticky" sx={{ p: 2, borderRadius: '10px', backgroundColor: '#FFF' }}>
+            <AppBar position="sticky" sx={{ p: 2, borderRadius: '10px', backgroundColor: '#FCFAF2' }}>
                 <Container maxWidth="xl">
                     <Toolbar disableGutters>
                         <AssessmentIcon fontSize='large' sx={{ mr: 2, color: 'red', cursor: 'pointer' }} onClick={() => navigate('/')} />

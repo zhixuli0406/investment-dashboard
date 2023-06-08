@@ -7,6 +7,10 @@ import IndexLayout from '../Layout/IndexLayout';
 const darkTheme = createTheme({
     palette: {
         mode: 'light',
+        background: {
+            default: "#FCFAF2"
+        }
+
     },
 });
 
