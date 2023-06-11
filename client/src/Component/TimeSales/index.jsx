@@ -1,5 +1,5 @@
 import { Grid } from "@mui/material";
-import { useEffect, useState } from "react";
+import { useState } from "react";
 import moment from 'moment';
 import Paper from '@mui/material/Paper';
 import Table from '@mui/material/Table';
@@ -7,9 +7,7 @@ import TableBody from '@mui/material/TableBody';
 import TableCell from '@mui/material/TableCell';
 import TableContainer from '@mui/material/TableContainer';
 import TableHead from '@mui/material/TableHead';
-import Button from '@mui/material/Button';
 import Typography from '@mui/material/Typography';
-import KeyboardArrowDownIcon from '@mui/icons-material/KeyboardArrowDown';
 import TableRow from '@mui/material/TableRow';
 import axios from "axios";
 import '../../css/index.css'
@@ -21,8 +19,6 @@ const TimeSales = (props) => {
     const { stockID, stockInfo } = props;
     const [priceByVolumes, setPriceByVolumes] = useState([])
     const [priceByTimes, setPriceByTimes] = useState([]);
-    const [offsetNumber, setOffsetNumber] = useState(30);
-    const [moreDisabled, setMoreDisable] = useState(false);
     const [allVolumes, setAllVolumes] = useState(0)
 
     const getPriceByVolumes = async () => {

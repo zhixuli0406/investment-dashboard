@@ -75,6 +75,17 @@ export default function TechnicalIndicatorKLineChart(props) {
         chart.current?.createIndicator('VOL', false, { height: 100 })
         chart.current?.setStyles({
             candle: {
+                bar: {
+                    upColor: '#F92855',
+                    downColor: '#2DC08E',
+                    noChangeColor: '#888888',
+                    upBorderColor: '#F92855',
+                    downBorderColor: '#2DC08E',
+                    noChangeBorderColor: '#888888',
+                    upWickColor: '#F92855',
+                    downWickColor: '#2DC08E',
+                    noChangeWickColor: '#888888'
+                },
                 tooltip: {
                     showRule: 'follow_cross',
                     showType: 'rect'
