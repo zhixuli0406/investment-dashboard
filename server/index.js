@@ -1,5 +1,6 @@
 import { MongoClient } from 'mongodb'
-import { fetchListedStocks } from './TwseScraperService.js';
+import { fetchListedStocks, fetchTSEEquitiesQuotes, fetchOTCEquitiesQuotes } from './TwseScraperService.js';
+import moment from 'moment';
 
 const url = 'mongodb://localhost:27017';
 const client = new MongoClient(url);
@@ -21,9 +22,21 @@ async function main() {
     const otc = await fetchListedStocks({ market: 'OTC' });
     await collection.insertMany(otc);
 
-    const findResult = await collection.find({ symbol: '00679B' }).toArray();
-    console.log('Found documents =>', findResult);
+    let nowDate = moment().format('YYYYMMDD');
+    let tenYearsAgo = moment().subtract(10, 'years').format('YYYYMMDD');
 
+    while (nowDate !== tenYearsAgo) {
+        const TSEQuotes = await fetchTSEEquitiesQuotes(nowDate)
+        const OTCQuotes = await fetchOTCEquitiesQuotes(nowDate)
+        for (let i = 0; i < TSEQuotes.length; i++) {
+            await collection.updateOne({ symbol: TSEQuotes[i].symbol }, { $push: { candles: TSEQuotes[i] } });
+        }
+        for (let i = 0; i < OTCQuotes.length; i++) {
+            await collection.updateOne({ symbol: OTCQuotes[i].symbol }, { $push: { candles: OTCQuotes[i] } });
+        }
+        nowDate = moment(nowDate).subtract(1, 'days').format('YYYYMMDD');
+        console.log(nowDate)
+    }
     return 'done.';
 }
 
