@@ -22,10 +22,11 @@ async function main() {
     // const otc = await fetchListedStocks({ market: 'OTC' });
     // await collection.insertMany(otc);
 
-    let nowDate = moment('2011-07-29').format('YYYYMMDD');
-    let tenYearsAgo = moment('2011-07-29').subtract(5, 'years').format('YYYYMMDD');
+    let nowDate = moment('2011-05-18').format('YYYYMMDD');
+    let tenYearsAgo = moment('2011-05-18').subtract(5, 'years').format('YYYYMMDD');
 
     while (nowDate !== tenYearsAgo) {
+        console.log(nowDate)
         const TSEQuotes = await fetchTSEEquitiesQuotes(nowDate)
         const OTCQuotes = await fetchOTCEquitiesQuotes(nowDate)
         for (let i = 0; i < TSEQuotes.length; i++) {
@@ -34,8 +35,8 @@ async function main() {
         for (let i = 0; i < OTCQuotes.length; i++) {
             await collection.updateOne({ symbol: OTCQuotes[i].symbol }, { $push: { candles: OTCQuotes[i] } });
         }
+        console.log(nowDate + ' done!')
         nowDate = moment(nowDate).subtract(1, 'days').format('YYYYMMDD');
-        console.log(nowDate)
     }
     return 'done.';
 }

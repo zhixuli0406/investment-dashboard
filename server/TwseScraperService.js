@@ -50,7 +50,7 @@ export async function fetchTSEEquitiesQuotes(date) {
     if (!responseData) return [];
 
     // 整理回應資料
-    const data = responseData.data8.map(row => {
+    const data = responseData.data9.map(row => {
         const [symbol, name, ...values] = row;
         const [
             tradeVolume,  // 成交股數
