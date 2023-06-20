@@ -14,16 +14,16 @@ async function main() {
     const db = client.db(dbName);
     const collection = db.collection('stockList');
 
-    await collection.drop({});
+    // await collection.drop({});
 
-    const tse = await fetchListedStocks({ market: 'TSE' });
-    await collection.insertMany(tse);
+    // const tse = await fetchListedStocks({ market: 'TSE' });
+    // await collection.insertMany(tse);
 
-    const otc = await fetchListedStocks({ market: 'OTC' });
-    await collection.insertMany(otc);
+    // const otc = await fetchListedStocks({ market: 'OTC' });
+    // await collection.insertMany(otc);
 
-    let nowDate = moment().format('YYYYMMDD');
-    let tenYearsAgo = moment().subtract(10, 'years').format('YYYYMMDD');
+    let nowDate = moment('2011-07-29').format('YYYYMMDD');
+    let tenYearsAgo = moment('2011-07-29').subtract(5, 'years').format('YYYYMMDD');
 
     while (nowDate !== tenYearsAgo) {
         const TSEQuotes = await fetchTSEEquitiesQuotes(nowDate)
