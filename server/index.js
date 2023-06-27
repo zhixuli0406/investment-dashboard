@@ -1,5 +1,6 @@
 import { MongoClient } from 'mongodb'
-import { fetchListedStocks, fetchTSEEquitiesQuotes, fetchOTCEquitiesQuotes } from './TwseScraperService.js';
+import { fetchListedStocks, fetchTSEEquitiesQuotes, } from './TwseScraperService.js';
+import { fetchOTCEquitiesQuotes } from './TpexScraperService.js';
 import moment from 'moment';
 
 const url = 'mongodb://localhost:27017';
@@ -22,8 +23,8 @@ async function main() {
     // const otc = await fetchListedStocks({ market: 'OTC' });
     // await collection.insertMany(otc);
 
-    let nowDate = moment('2006-05-18').format('YYYYMMDD');
-    let tenYearsAgo = moment('2006-05-18').subtract(5, 'years').format('YYYYMMDD');
+    let nowDate = moment('2023-06-27').format('YYYYMMDD');
+    let tenYearsAgo = moment('2006-06-23').format('YYYYMMDD');
 
     while (nowDate !== tenYearsAgo) {
         console.log(nowDate)

@@ -50,7 +50,7 @@ export async function fetchTSEEquitiesQuotes(date) {
     if (!responseData) return [];
 
     // 整理回應資料
-    const data = responseData.data8.map(row => {
+    const data = responseData.data9.map(row => {
         const [symbol, name, ...values] = row;
         const [
             tradeVolume,  // 成交股數
@@ -91,63 +91,158 @@ export async function fetchTSEEquitiesQuotes(date) {
     return data;
 }
 
-export async function fetchOTCEquitiesQuotes(date) {
-    const dt = DateTime.fromISO(date);
-    const year = dt.get('year') - 1911;
-    const formattedDate = `${year}/${dt.toFormat('MM/dd')}`;
+export async function fetchTSEMarketTrades(date) {
+    const formattedDate = DateTime.fromISO(date).toFormat('yyyyMMdd');
 
-    const url = `https://www.tpex.org.tw/web/stock/aftertrading/daily_close_quotes/stk_quote_result.php`;
+    const url = `https://www.twse.com.tw/exchangeReport/FMTQIK?${query}`;
 
-    // 取得回應資料
     const responseData = await axios.get(url, {
         params: {
-            l: 'zh-tw',       // 指定語系為正體中文
-            d: formattedDate, // 指定資料日期
-            o: 'json',        // 指定回應格式為 JSON
+            response: 'json',
+            date: formattedDate,
         }
     })
-        .then(response => (response.data.iTotalRecords > 0) ? response.data : null);
+        .then(response => (response.data.stat === 'OK') && response.data);
 
-    // 若該日期非交易日或尚無成交資訊則回傳 null
-    if (!responseData) return [];
+    if (!responseData) return null;
 
     // 整理回應資料
-    const data = responseData.aaData
+    const data = responseData.data
         .map(row => {
-            const [symbol, name, ...values] = row;
-            const [
-                closePrice,   // 收盤價
-                change,       // 漲跌
-                openPrice,    // 開盤價
-                highPrice,    // 最高價
-                lowPrice,     // 最低價
-                avgPrice,     // 均價
-                tradeVolume,  // 成交股數
-                tradeValue,   // 成交金額
-                transaction,  // 成交筆數
-            ] = values.slice(0, 9).map(value => numeral(value).value());
+            // [ 日期, 成交股數, 成交金額, 成交筆數, 發行量加權股價指數, 漲跌點數 ]
+            const [date, ...values] = row;
 
-            // 回推參考價
-            const referencePrice = (closePrice && change !== null) && numeral(closePrice).subtract(change).value() || null;
+            const [year, month, day] = date.split('/');
+            const formatted = `${+year + 1911}${month}${day}`;
+            const formattedDate = DateTime.fromFormat(formatted, 'yyyyMMdd').toISODate();
 
-            // 計算漲跌幅
-            const changePercent = (closePrice && change !== null) && +numeral(change).divide(referencePrice).multiply(100).format('0.00') || null;
+            // 轉為數字格式
+            const [tradeVolume, tradeValue, transaction, price, change]
+                = values.map(value => numeral(value).value());
 
             return {
-                date,
-                symbol,
-                name,
-                openPrice,
-                highPrice,
-                lowPrice,
-                closePrice,
-                change,
-                changePercent,
+                date: formattedDate,
                 tradeVolume,
                 tradeValue,
                 transaction,
+                price,
+                change,
             };
-        });
+        })
+        .find(data => data.date === date) || null;
 
     return data;
+}
+
+export async function fetchTSEMarketBreadth(date) {
+    const formattedDate = DateTime.fromISO(date).toFormat('yyyyMMdd');
+
+    const url = `https://www.twse.com.tw/exchangeReport/MI_INDEX?${query}`;
+
+
+    const responseData = await axios.get(url, {
+        params: {
+            response: 'json',     // 指定回應格式為 JSON
+            date: formattedDate,  // 指定資料日期
+            type: 'MS',           // 指定類別為大盤統計資訊
+        }
+    })
+        .then(response => (response.data.stat === 'OK') && response.data);
+
+    if (!responseData) return null;
+
+    const raw = responseData.data8.map(row => row[2]);
+    const [up, limitUp, down, limitDown, unchanged, unmatched, notApplicable] = [
+        ...raw[0].replace(')', '').split('('),
+        ...raw[1].replace(')', '').split('('),
+        ...raw.slice(2),
+    ].map(value => numeral(value).value());
+
+    const data = {
+        date,
+        up,
+        limitUp,
+        down,
+        limitDown,
+        unchanged,
+        unmatched: unmatched + notApplicable,
+    };
+
+    return data;
+}
+
+export async function fetchTSEInstInvestorsTrades(date) {
+    const formattedDate = DateTime.fromISO(date).toFormat('yyyyMMdd');
+
+    const url = `https://www.twse.com.tw/fund/BFI82U?${query}`;
+
+    const responseData = await axios.get(url, {
+        params: {
+            response: 'json',         // 指定回應格式為 JSON
+            dayDate: formattedDate,   // 指定資料日期
+            type: 'day',              // 指定輸出日報表
+        }
+    })
+        .then(response => (response.data.stat === 'OK') && response.data);
+
+    if (!responseData) return null;
+
+    const raw = responseData.data
+        .map(data => data.slice(1)).flat()
+        .map(data => numeral(data).value() || +data);
+
+    const [
+        dealersProprietaryBuy,            // 自營商(自行買賣)買進金額
+        dealersProprietarySell,           // 自營商(自行買賣)賣出金額
+        dealersProprietaryNetBuySell,     // 自營商(自行買賣)買賣超
+        dealersHedgeBuy,                  // 自營商(避險)買進金額
+        dealersHedgeSell,                 // 自營商(避險)賣出金額
+        dealersHedgeNetBuySell,           // 自營商(避險)買賣超
+        sitcBuy,                          // 投信買進金額
+        sitcSell,                         // 投信賣出金額
+        sitcNetBuySell,                   // 投信買賣超
+        foreignDealersExcludedBuy,        // 外資及陸資(不含外資自營商)買進金額
+        foreignDealersExcludedSell,       // 外資及陸資(不含外資自營商)賣出金額
+        foreignDealersExcludedNetBuySell, // 外資及陸資(不含外資自營商)買賣超
+        foreignDealersBuy,                // 外資自營商買進金額
+        foreignDealersSell,               // 外資自營商賣出金額
+        foreignDealersNetBuySell,         // 外資自營商買賣超
+    ] = raw;
+
+    const foreignInvestorsBuy = foreignDealersExcludedBuy + foreignDealersBuy;
+
+    const foreignInvestorsSell = foreignDealersExcludedSell + foreignDealersSell;
+
+    const foreignInvestorsNetBuySell = foreignDealersExcludedNetBuySell + foreignDealersNetBuySell;
+
+    const dealersBuy = dealersProprietaryBuy + dealersHedgeBuy;
+
+    const dealersSell = dealersProprietarySell + dealersHedgeSell;
+
+    const dealersNetBuySell = dealersProprietaryNetBuySell + dealersHedgeNetBuySell;
+
+    return {
+        date,
+        foreignDealersExcludedBuy,
+        foreignDealersExcludedSell,
+        foreignDealersExcludedNetBuySell,
+        foreignDealersBuy,
+        foreignDealersSell,
+        foreignDealersNetBuySell,
+        foreignInvestorsBuy,
+        foreignInvestorsSell,
+        foreignInvestorsNetBuySell,
+        sitcBuy,
+        sitcSell,
+        sitcNetBuySell,
+        dealersProprietaryBuy,
+        dealersProprietarySell,
+        dealersProprietaryNetBuySell,
+        dealersHedgeBuy,
+        dealersHedgeSell,
+        dealersHedgeNetBuySell,
+        dealersBuy,
+        dealersSell,
+        dealersNetBuySell,
+    };
 }
