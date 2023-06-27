@@ -22,8 +22,8 @@ async function main() {
     // const otc = await fetchListedStocks({ market: 'OTC' });
     // await collection.insertMany(otc);
 
-    let nowDate = moment('2011-05-18').format('YYYYMMDD');
-    let tenYearsAgo = moment('2011-05-18').subtract(5, 'years').format('YYYYMMDD');
+    let nowDate = moment('2006-05-18').format('YYYYMMDD');
+    let tenYearsAgo = moment('2006-05-18').subtract(5, 'years').format('YYYYMMDD');
 
     while (nowDate !== tenYearsAgo) {
         console.log(nowDate)
