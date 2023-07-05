@@ -37,8 +37,8 @@ async function main() {
     // await collection.insertMany(await fetchListedStocks({market:'TSE'}));
     // await collection.insertMany(await fetchListedStocks({market:'OTC'}));
 
-    // let nowDate = moment('2023-07-04').format('YYYYMMDD');
-    // let tenYearsAgo = moment('2013-07-04').format('YYYYMMDD');
+    let nowDate = moment().format('YYYYMMDD');
+    let tenYearsAgo = moment('2023-06-30').format('YYYYMMDD');
 
     // while (nowDate !== tenYearsAgo) {
     //     console.log(nowDate)
@@ -72,19 +72,25 @@ async function main() {
     //    nowDate = moment(nowDate).subtract(1, 'days').format('YYYYMMDD');
     //}
 
-    // while (nowDate !== tenYearsAgo) {
-    //     console.log(nowDate)
-    //     const TSEQuotes = await fetchTSEEquitiesQuotes(nowDate)
-    //     const OTCQuotes = await fetchOTCEquitiesQuotes(nowDate)
-    //     for (let i = 0; i < TSEQuotes.length; i++) {
-    //         await collection.updateOne({ symbol: TSEQuotes[i].symbol }, { $push: { candles: TSEQuotes[i] } });
-    //     }
-    //     for (let i = 0; i < OTCQuotes.length; i++) {
-    //         await collection.updateOne({ symbol: OTCQuotes[i].symbol }, { $push: { candles: OTCQuotes[i] } });
-    //     }
-    //     console.log(nowDate + ' done!')
-    //     nowDate = moment(nowDate).subtract(1, 'days').format('YYYYMMDD');
-    // }
+    while (nowDate !== tenYearsAgo) {
+        console.log(nowDate)
+        const TSEQuotes = await fetchTSEEquitiesQuotes(nowDate)
+        const OTCQuotes = await fetchOTCEquitiesQuotes(nowDate)
+        for (let i = 0; i < TSEQuotes.length; i++) {
+            let col = historicalDB.collection(`${TSEQuotes[i].symbol}`)
+            let date = await col.find({ date: TSEQuotes[i].date }).toArray()
+            if (date.length === 0)
+                await col.insertOne(TSEQuotes[i])
+        }
+        for (let i = 0; i < OTCQuotes.length; i++) {
+            let col = historicalDB.collection(`${OTCQuotes[i].symbol}`)
+            let date = await col.find({ date: OTCQuotes[i].date }).toArray()
+            if (date.length === 0)
+                await col.insertOne(OTCQuotes[i])
+        }
+        console.log(nowDate + ' done!')
+        nowDate = moment(nowDate).subtract(1, 'days').format('YYYYMMDD');
+    }
     await client.close();
     return 'done.';
 }
