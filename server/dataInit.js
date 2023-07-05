@@ -32,10 +32,10 @@ async function main() {
     //         }
     //     }
     // }
-    await collection.drop();
-    await collection.createIndex({ symbol: 1 }, { unique: true });
-    await collection.insertMany(await fetchListedStocks({market:'TSE'}));
-    await collection.insertMany(await fetchListedStocks({market:'OTC'}));
+    // await collection.drop();
+    // await collection.createIndex({ symbol: 1 }, { unique: true });
+    // await collection.insertMany(await fetchListedStocks({market:'TSE'}));
+    // await collection.insertMany(await fetchListedStocks({market:'OTC'}));
 
     // let nowDate = moment('2023-07-04').format('YYYYMMDD');
     // let tenYearsAgo = moment('2013-07-04').format('YYYYMMDD');
