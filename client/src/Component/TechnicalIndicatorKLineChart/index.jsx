@@ -31,31 +31,30 @@ export default function TechnicalIndicatorKLineChart(props) {
 
     const getStockPrice = async () => {
         const response = await axios.get(
-            `https://stock-proxy-uyy2ythogq-de.a.run.app/yahoo/v8/finance/chart/${stockID}`,
+            `http://122.117.135.211:8080/stock/historical/candles`,
             {
                 params: {
-                    symbol: stockID,
-                    period1: parseInt(new Date().getTime() / 1000) - 315532800,
-                    period2: parseInt(new Date().getTime() / 1000),
-                    interval: kLineType.name,
-                    includePrePost: true,
-                    lang: 'zh-TW'
+                    symbol: stockID.split('.')[0]
                 }
             }
         );
-        let chart = response.data.chart.result['0'];
+        let chart = response.data;
         let data = []
-        for (let i = 0; i < chart.timestamp.length; i++) {
-            if (chart.indicators.quote['0'].open[i] !== 0) {
-                data.push({
-                    timestamp: chart.timestamp[i] * 1000,
-                    open: chart.indicators.quote['0'].open[i],
-                    close: chart.indicators.quote['0'].close[i],
-                    high: chart.indicators.quote['0'].high[i],
-                    low: chart.indicators.quote['0'].low[i],
-                    volume: chart.indicators.quote['0'].volume[i]
-                })
-            }
+        for (let i = 0; i < chart.length; i++) {
+            let dateString = chart[i].date;
+            var year = dateString.substring(0, 4);
+            var month = dateString.substring(4, 6);
+            var day = dateString.substring(6, 8);
+            var date = new Date(year, month - 1, day);
+            data.push({
+                timestamp: date.getTime(),
+                open: chart[i].openPrice,
+                close: chart[i].closePrice,
+                high: chart[i].highPrice,
+                low: chart[i].lowPrice,
+                volume: chart[i].tradeVolume,
+                turnover: chart[i].tradeValue
+            })
         }
         setDataSet(data)
     }
@@ -67,7 +66,8 @@ export default function TechnicalIndicatorKLineChart(props) {
             high: '高：',
             low: '低：',
             close: '收：',
-            volume: '成交量：'
+            volume: '成交量：',
+            turnover: '成交額：'
         })
         chart.current = init('technical-indicator-k-line')
         chart.current?.setLocale('zh-TW')

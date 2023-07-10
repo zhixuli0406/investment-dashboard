@@ -3,11 +3,9 @@ import axios from 'axios';
 import { DateTime } from 'luxon';
 import numeral from 'numeral';
 
-export async function fetchListedStocks(options) {
+export async function fetchTSEListedStocks() {
     const decoder = new TextDecoder("big5");
-    let url = ''
-    if (options?.market === 'TSE') url = 'https://isin.twse.com.tw/isin/class_main.jsp?market=1'
-    else if (options?.market === 'OTC') url = 'https://isin.twse.com.tw/isin/class_main.jsp?market=2'
+    let url = 'https://isin.twse.com.tw/isin/class_main.jsp?market=1'
 
     // 取得 HTML 並轉換為 Big-5 編碼
     const page = await axios.get(url, { responseType: 'arraybuffer' })

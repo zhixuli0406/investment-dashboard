@@ -1,10 +1,7 @@
-import { MongoClient } from 'mongodb'
-import { fetchListedStocks, fetchTSEEquitiesQuotes, fetchTSEMarketTrades, fetchTSEMarketBreadth, fetchTSEInstInvestorsTrades,fetchTSEEquitiesInstInvestorsTrades } from './TwseScraperService.js';
-import { fetchOTCEquitiesQuotes, fetchOTCMarketTrades, fetchOTCMarketBreadth, fetchOTCInstInvestorsTrades,fetchEquitiesInstInvestorsTrades } from './TpexScraperService.js';
+import { stockDB, historicalDB, instInvestorsTradesDB } from './mongoDB.js'
+import { fetchTSEEquitiesQuotes, fetchTSEMarketTrades, fetchTSEMarketBreadth, fetchTSEInstInvestorsTrades, fetchTSEEquitiesInstInvestorsTrades } from './TwseScraperService.js';
+import { fetchOTCEquitiesQuotes, fetchOTCMarketTrades, fetchOTCMarketBreadth, fetchOTCInstInvestorsTrades, fetchOTCEquitiesInstInvestorsTrades } from './TpexScraperService.js';
 import moment from 'moment';
-
-const url = 'mongodb://127.0.0.1:27017';
-const client = new MongoClient(url);
 
 function sleep(ms) {
     return new Promise((resolve) => {
@@ -13,13 +10,10 @@ function sleep(ms) {
 }
 
 async function main() {
-    // Use connect method to connect to the server
-    const db = client.db('stock');
-    const historicalDB = client.db('historical');
-    const InstInvestorsTradesDB = client.db('InstInvestorsTrades');
-    const collection = db.collection('stockList');
-    const tseCollection = db.collection('tseMarket');
-    const otcCollection = db.collection('otcMarket');
+    //// Use connect method to connect to the server
+    //const collection = stockDB.collection('stockList');
+    //const tseCollection = stockDB.collection('tseMarket');
+    //const otcCollection = stockDB.collection('otcMarket');
 
     // let data = collection.find();
     // for await (const item of data) {
@@ -38,8 +32,8 @@ async function main() {
     // await collection.insertMany(await fetchListedStocks({market:'TSE'}));
     // await collection.insertMany(await fetchListedStocks({market:'OTC'}));
 
-    let nowDate = moment('2022-09-05').format('YYYYMMDD');
-    let tenYearsAgo = moment('2013-06-30').format('YYYYMMDD');
+    let nowDate = moment().format('YYYYMMDD');
+    let tenYearsAgo = moment('2023-07-01').format('YYYYMMDD');
 
     // while (nowDate !== tenYearsAgo) {
     //     console.log(nowDate)
@@ -73,21 +67,43 @@ async function main() {
     //    nowDate = moment(nowDate).subtract(1, 'days').format('YYYYMMDD');
     //}
 
+    // while (nowDate !== tenYearsAgo) {
+    //     console.log(nowDate)
+    //     const TSEQuotes = await fetchTSEEquitiesInstInvestorsTrades(nowDate)
+    //     const OTCQuotes = await fetchEquitiesInstInvestorsTrades(nowDate)
+    //     if (TSEQuotes && OTCQuotes) {
+    //         for (let i = 0; i < TSEQuotes.length; i++) {
+    //             let col = instInvestorsTradesDB.collection(`${TSEQuotes[i].symbol}`)
+    //             col.createIndex({ date: 1 }, { unique: true });
+    //             let date = await col.find({ date: TSEQuotes[i].date }).toArray()
+    //             if (date.length === 0)
+    //                 await col.insertOne(TSEQuotes[i])
+    //         }
+    //         for (let i = 0; i < OTCQuotes.length; i++) {
+    //             let col = instInvestorsTradesDB.collection(`${OTCQuotes[i].symbol}`)
+    //             col.createIndex({ date: 1 }, { unique: true });
+    //             let date = await col.find({ date: OTCQuotes[i].date }).toArray()
+    //             if (date.length === 0)
+    //                 await col.insertOne(OTCQuotes[i])
+    //         }
+    //     }
+    //     console.log(nowDate + ' done!')
+    //     nowDate = moment(nowDate).subtract(1, 'days').format('YYYYMMDD');
+    // }
+
     while (nowDate !== tenYearsAgo) {
         console.log(nowDate)
-        const TSEQuotes = await fetchTSEEquitiesInstInvestorsTrades(nowDate)
-        const OTCQuotes = await fetchEquitiesInstInvestorsTrades(nowDate)
-        if(TSEQuotes&&OTCQuotes){
+        const TSEQuotes = await fetchTSEEquitiesQuotes(nowDate)
+        const OTCQuotes = await fetchOTCEquitiesQuotes(nowDate)
+        if (TSEQuotes && OTCQuotes) {
             for (let i = 0; i < TSEQuotes.length; i++) {
-                let col = InstInvestorsTradesDB.collection(`${TSEQuotes[i].symbol}`)
-                col.createIndex({ date: 1 }, { unique: true });
+                let col = historicalDB.collection(`${TSEQuotes[i].symbol}`)
                 let date = await col.find({ date: TSEQuotes[i].date }).toArray()
                 if (date.length === 0)
                     await col.insertOne(TSEQuotes[i])
             }
             for (let i = 0; i < OTCQuotes.length; i++) {
-                let col = InstInvestorsTradesDB.collection(`${OTCQuotes[i].symbol}`)
-                col.createIndex({ date: 1 }, { unique: true });
+                let col = historicalDB.collection(`${OTCQuotes[i].symbol}`)
                 let date = await col.find({ date: OTCQuotes[i].date }).toArray()
                 if (date.length === 0)
                     await col.insertOne(OTCQuotes[i])
@@ -96,11 +112,10 @@ async function main() {
         console.log(nowDate + ' done!')
         nowDate = moment(nowDate).subtract(1, 'days').format('YYYYMMDD');
     }
-    await client.close();
+    console.log(await fetchOTCIntradayQuote())
     return 'done.';
 }
 
 main()
     .then(console.log)
     .catch(console.error)
-    .finally(() => client.close());
